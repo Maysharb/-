@@ -1,0 +1,224 @@
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة مدينة المهن للأطفال</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f0f9ff;
+            touch-action: manipulation;
+            overflow-x: hidden;
+        }
+        .career-card:active {
+            transform: scale(0.95);
+        }
+        .bouncing {
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+        .drop-zone {
+            border: 3px dashed #cbd5e1;
+            transition: all 0.3s;
+        }
+        .drop-zone.active {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center min-h-screen p-4">
+
+    <!-- شاشة البداية -->
+    <div id="start-screen" class="w-full max-w-md text-center mt-10">
+        <h1 class="text-4xl font-black text-blue-600 mb-6 bouncing">مدينة المهن 🏗️🩺🍕</h1>
+        <p class="text-xl text-gray-600 mb-10">مرحباً يا بطل! ماذا تريد أن تصبح اليوم؟</p>
+        
+        <div class="grid grid-cols-1 gap-6">
+            <button onclick="startJob('doctor')" class="career-card bg-white p-6 rounded-3xl shadow-xl border-b-8 border-red-500 flex items-center justify-between transition-transform">
+                <span class="text-5xl">🩺</span>
+                <span class="text-2xl font-bold text-gray-800">طبيب ماهر</span>
+                <span class="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm">اختر</span>
+            </button>
+
+            <button onclick="startJob('engineer')" class="career-card bg-white p-6 rounded-3xl shadow-xl border-b-8 border-yellow-500 flex items-center justify-between transition-transform">
+                <span class="text-5xl">🏗️</span>
+                <span class="text-2xl font-bold text-gray-800">مهندس مبدع</span>
+                <span class="bg-yellow-100 text-yellow-600 px-3 py-1 rounded-full text-sm">اختر</span>
+            </button>
+
+            <button onclick="startJob('chef')" class="career-card bg-white p-6 rounded-3xl shadow-xl border-b-8 border-green-500 flex items-center justify-between transition-transform">
+                <span class="text-5xl">👨‍🍳</span>
+                <span class="text-2xl font-bold text-gray-800">طباخ فنان</span>
+                <span class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm">اختر</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- شاشة اللعب -->
+    <div id="game-screen" class="hidden w-full max-w-md flex flex-col items-center">
+        <button onclick="showStartScreen()" class="self-start mb-4 text-blue-500 font-bold">⬅️ العودة للرئيسية</button>
+        
+        <div id="game-content" class="bg-white w-full p-6 rounded-3xl shadow-2xl min-h-[400px] flex flex-col items-center justify-center text-center">
+            <!-- سيتم ملؤه بواسطة JavaScript -->
+        </div>
+
+        <div id="feedback" class="mt-6 h-12 text-xl font-bold text-center"></div>
+    </div>
+
+    <!-- نافذة النجاح -->
+    <div id="success-modal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
+        <div class="bg-white p-8 rounded-3xl text-center shadow-2xl max-w-xs w-full">
+            <div class="text-6xl mb-4">⭐</div>
+            <h2 class="text-3xl font-black text-blue-600 mb-2">رائع جداً!</h2>
+            <p class="text-gray-600 mb-6">لقد قمت بعمل مذهل يا بطل المهن!</p>
+            <button onclick="showStartScreen()" class="bg-blue-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-blue-700 transition-colors w-full">إكمال الرحلة</button>
+        </div>
+    </div>
+
+    <script>
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const gameContent = document.getElementById('game-content');
+        const feedback = document.getElementById('feedback');
+        const successModal = document.getElementById('success-modal');
+
+        function showMessage(msg, type = 'info') {
+            feedback.innerText = msg;
+            feedback.className = type === 'success' ? 'mt-6 h-12 text-xl font-bold text-green-500' : 'mt-6 h-12 text-xl font-bold text-blue-500';
+            setTimeout(() => { feedback.innerText = ''; }, 2000);
+        }
+
+        function showStartScreen() {
+            successModal.classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+
+        function startJob(job) {
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            gameContent.innerHTML = '';
+            
+            if (job === 'doctor') setupDoctorGame();
+            if (job === 'engineer') setupEngineerGame();
+            if (job === 'chef') setupChefGame();
+        }
+
+        // --- لعبة الطبيب ---
+        function setupDoctorGame() {
+            gameContent.innerHTML = `
+                <h3 class="text-2xl font-bold mb-4">ساعد الطبيب في جمع أدواته!</h3>
+                <p class="text-gray-500 mb-6">اضغط على الأدوات الطبية فقط (3 أدوات)</p>
+                <div class="grid grid-cols-3 gap-4 w-full">
+                    <button onclick="selectTool(this, true)" class="text-4xl p-4 bg-gray-50 rounded-2xl hover:bg-red-50">🩺</button>
+                    <button onclick="selectTool(this, false)" class="text-4xl p-4 bg-gray-50 rounded-2xl hover:bg-red-50">🧸</button>
+                    <button onclick="selectTool(this, true)" class="text-4xl p-4 bg-gray-50 rounded-2xl hover:bg-red-50">🌡️</button>
+                    <button onclick="selectTool(this, false)" class="text-4xl p-4 bg-gray-50 rounded-2xl hover:bg-red-50">🍦</button>
+                    <button onclick="selectTool(this, true)" class="text-4xl p-4 bg-gray-50 rounded-2xl hover:bg-red-50">🩹</button>
+                    <button onclick="selectTool(this, false)" class="text-4xl p-4 bg-gray-50 rounded-2xl hover:bg-red-50">⚽</button>
+                </div>
+            `;
+            let found = 0;
+            window.selectTool = (btn, isCorrect) => {
+                if (isCorrect) {
+                    btn.classList.replace('bg-gray-50', 'bg-green-100');
+                    btn.disabled = true;
+                    found++;
+                    showMessage('أحسنت! أداة طبية', 'success');
+                    if (found === 3) setTimeout(showSuccess, 1000);
+                } else {
+                    btn.classList.add('animate-shake');
+                    showMessage('هذه لعبة، جرب ثانية', 'error');
+                }
+            };
+        }
+
+        // --- لعبة المهندس ---
+        function setupEngineerGame() {
+            gameContent.innerHTML = `
+                <h3 class="text-2xl font-bold mb-4">بناء برج الألوان!</h3>
+                <p class="text-gray-500 mb-6">اضغط على المربعات لبناء البرج بالترتيب</p>
+                <div id="tower-container" class="flex flex-col-reverse items-center justify-end w-full h-48 mb-6 border-b-4 border-gray-800">
+                    <!-- البرج سيبنى هنا -->
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="addBlock('#ef4444')" class="w-12 h-12 bg-red-500 rounded-lg shadow-md"></button>
+                    <button onclick="addBlock('#3b82f6')" class="w-12 h-12 bg-blue-500 rounded-lg shadow-md"></button>
+                    <button onclick="addBlock('#fbbf24')" class="w-12 h-12 bg-yellow-500 rounded-lg shadow-md"></button>
+                </div>
+            `;
+            let blocks = 0;
+            window.addBlock = (color) => {
+                if (blocks < 4) {
+                    const block = document.createElement('div');
+                    block.style.backgroundColor = color;
+                    block.className = `w-32 h-10 mb-1 rounded shadow-sm border-2 border-black/10 animate-bounce`;
+                    document.getElementById('tower-container').appendChild(block);
+                    blocks++;
+                    if (blocks === 4) {
+                        showMessage('يا له من بناء قوي!', 'success');
+                        setTimeout(showSuccess, 1000);
+                    }
+                }
+            };
+        }
+
+        // --- لعبة الطباخ ---
+        function setupChefGame() {
+            gameContent.innerHTML = `
+                <h3 class="text-2xl font-bold mb-4">صانع البيتزا الصحية</h3>
+                <div id="pizza-base" class="relative w-40 h-40 bg-orange-200 rounded-full border-4 border-orange-400 mb-6 flex items-center justify-center">
+                    <span class="text-xs text-orange-800 font-bold">ضع المكونات هنا</span>
+                </div>
+                <p class="text-sm text-gray-500 mb-4">اختر 4 مكونات لذيذة:</p>
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="addIngredient('🍅')" class="text-3xl p-2 bg-white border rounded-xl">🍅</button>
+                    <button onclick="addIngredient('🍄')" class="text-3xl p-2 bg-white border rounded-xl">🍄</button>
+                    <button onclick="addIngredient('🧀')" class="text-3xl p-2 bg-white border rounded-xl">🧀</button>
+                    <button onclick="addIngredient('🫑')" class="text-3xl p-2 bg-white border rounded-xl">🫑</button>
+                </div>
+            `;
+            let ingredients = 0;
+            window.addIngredient = (emoji) => {
+                const item = document.createElement('span');
+                item.innerText = emoji;
+                item.className = 'absolute text-2xl';
+                item.style.left = Math.random() * 70 + 15 + '%';
+                item.style.top = Math.random() * 70 + 15 + '%';
+                document.getElementById('pizza-base').appendChild(item);
+                ingredients++;
+                if (ingredients === 4) {
+                    showMessage('يا لها من بيتزا شهية!', 'success');
+                    setTimeout(showSuccess, 1000);
+                }
+            };
+        }
+
+        function showSuccess() {
+            successModal.classList.remove('hidden');
+        }
+    </script>
+
+    <style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .animate-shake {
+            animation: shake 0.2s ease-in-out 2;
+        }
+    </style>
+</body>
+</html>
+
+```
